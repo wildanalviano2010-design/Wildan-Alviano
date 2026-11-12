@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wildan — Graphic & UI Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFFFFF;
+    --ink:#14141A;
+    --ink-soft:#4A4A52;
+    --grid-line:#E4E2DC;
+    --klein:#1A3FE4;
+    --coral:#FF5A36;
+    --sage:#7C9583;
+    --paper-alt:#F7F5F0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+  a{color:inherit;text-decoration:none;}
+  .mono{
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:0.02em;
+  }
+  .display{
+    font-family:'Space Grotesk',sans-serif;
+  }
+  .wrap{
+    max-width:1240px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+  .grid-guides{
+    position:fixed;
+    top:0; left:0; right:0; bottom:0;
+    max-width:1240px;
+    margin:0 auto;
+    padding:0 32px;
+    pointer-events:none;
+    z-index:0;
+    display:grid;
+    grid-template-columns:repeat(12,1fr);
+  }
+  .grid-guides span{
+    border-left:1px solid var(--grid-line);
+    height:100%;
+    opacity:0.5;
+  }
+  .grid-guides span:last-child{border-right:1px solid var(--grid-line);}
+  .crop{position:relative;}
+  .crop::before,
+  .crop::after,
+  .crop .cm2::before,
+  .crop .cm2::after{
+    content:'';
+    position:absolute;
+    width:14px;
+    height:14px;
+    border:1.5px solid var(--ink);
+    opacity:0;
+    transition:opacity 0.25s ease, transform 0.25s ease;
+  }
+  .crop::before{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+  .crop::after{top:-1px;right:-1px;border-left:none;border-bottom:none;}
+  .crop .cm2::before{bottom:-1px;left:-1px;border-right:none;border-top:none;position:absolute;}
+  .crop .cm2::after{bottom:-1px;right:-1px;border-left:none;border-top:none;position:absolute;}
+  .crop:hover::before,.crop:hover::after,
+  .crop:hover .cm2::before,.crop:hover .cm2::after{opacity:1;}
+  .crop:hover::before{transform:translate(-4px,-4px);}
+  .crop:hover::after{transform:translate(4px,-4px);}
+  .crop:hover .cm2::before{transform:translate(-4px,4px);}
+  .crop:hover .cm2::after{transform:translate(4px,4px);}
+  header{
+    position:sticky;
+    top:0;
+    background:rgba(255,255,255,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--grid-line);
+    z-index:50;
+  }
+  nav.wrap{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding-top:20px;
+    padding-bottom:20px;
+  }
+  .logo{
+    font-weight:700;
+    font-size:1.05rem;
+    letter-spacing:0.02em;
+  }
+  .logo span{color:var(--klein);}
+  .navlinks{
+    display:flex;
+    gap:36px;
+    font-size:0.85rem;
+  }
+  .navlinks a{
+    position:relative;
+    padding-bottom:4px;
+  }
+  .navlinks a:focus-visible, .btn:focus-visible, .tab:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visible{
+    outline:2px solid var(--klein);
+    outline-offset:3px;
+  }
+  .navlinks a::after{
+    content:'';
+    position:absolute;
+    left:0;bottom:0;
+    width:0;height:1px;
+    background:var(--ink);
+    transition:width 0.2s ease;
+  }
+  .navlinks a:hover::after{width:100%;}
+  .hero{
+    position:relative;
+    padding:96px 0 80px;
+    border-bottom:1px solid var(--grid-line);
+  }
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    margin-bottom:28px;
+    border:1px solid var(--grid-line);
+    padding:6px 12px;
+    border-radius:2px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--sage);display:inline-block;}
+  .hero h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:clamp(3rem,9vw,7.5rem);
+    line-height:0.92;
+    letter-spacing:-0.02em;
+    text-transform:uppercase;
+  }
+  .hero h1 em{
+    font-style:normal;
+    color:var(--klein);
+  }
+  .hero-sub{
+    margin-top:32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:40px;
+    flex-wrap:wrap;
+  }
+  .hero-sub p{
+    max-width:480px;
+    color:var(--ink-soft);
+    font-size:1.05rem;
+  }
+  .btn{
+    display:inline-block;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.85rem;
+    padding:14px 26px;
+    border-radius:2px;
+    white-space:nowrap;
+    transition:background 0.2s ease, transform 0.2s ease;
+    border:none;
+    cursor:pointer;
+  }
+  .btn:hover{background:var(--klein); transform:translateY(-2px);}
+  section{padding:80px 0;border-bottom:1px solid var(--grid-line);}
+  .sec-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:48px;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .sec-head .tag{
+    font-size:0.78rem;
+    color:var(--ink-soft);
+  }
+  .sec-head h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(1.8rem,4vw,2.6rem);
+    text-transform:uppercase;
+    letter-spacing:-0.01em;
+  }
+  .profile-grid{
+    display:grid;
+    grid-template-columns:1fr 1.3fr;
+    gap:64px;
+    align-items:start;
+  }
+  .profile-photo{
+    aspect-ratio:4/5;
+    background:var(--paper-alt);
+    border:1px solid var(--grid-line);
+    position:relative;
+    overflow:hidden;
+  }
+  .profile-photo::after{
+    content:'WDN / 01';
+    position:absolute;
+    bottom:16px;left:16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--ink-soft);
+  }
+  .profile-photo .swatchbar{
+    position:absolute;
+    top:0;left:0;right:0;
+    height:8px;
+    display:flex;
+  }
+  .profile-photo .swatchbar span{flex:1;}
+  .profile-text p{
+    color:var(--ink-soft);
+    margin-bottom:18px;
+    font-size:1.02rem;
+  }
+  .profile-text strong{color:var(--ink);font-weight:600;}
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+    margin-top:36px;
+  }
+  .stat b{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:2.2rem;
+    display:block;
+  }
+  .stat span{
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .skills-list{display:flex;flex-direction:column;gap:22px;}
+  .skill-row{display:grid;grid-template-columns:180px 1fr 56px;align-items:center;gap:18px;}
+  .skill-name{font-weight:500;font-size:0.95rem;}
+  .skill-track{
+    height:8px;
+    background:var(--paper-alt);
+    border:1px solid var(--grid-line);
+    position:relative;
+    overflow:hidden;
+  }
+  .skill-fill{
+    height:100%;
+    background:var(--ink);
+    width:0%;
+    transition:width 1.1s cubic-bezier(.16,1,.3,1);
+  }
+  .skill-row:nth-child(1) .skill-fill{background:var(--klein);}
+  .skill-row:nth-child(3) .skill-fill{background:var(--coral);}
+  .skill-row:nth-child(5) .skill-fill{background:var(--sage);}
+  .skill-pct{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    text-align:right;
+  }
+  .filters{display:flex;gap:10px;flex-wrap:wrap;}
+  .tab{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.8rem;
+    padding:9px 18px;
+    border:1px solid var(--grid-line);
+    background:transparent;
+    border-radius:2px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    transition:all 0.2s ease;
+  }
+  .tab.active,.tab:hover{
+    border-color:var(--ink);
+    color:var(--ink);
+    background:var(--paper-alt);
+  }
+  .proj-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:2px;
+    background:var(--grid-line);
+    border:1px solid var(--grid-line);
+    margin-top:44px;
+  }
+  .proj-card{
+    background:var(--paper);
+    padding:32px;
+    transition:opacity 0.3s ease, transform 0.3s ease;
+  }
+  .proj-card.hide{display:none;}
+  .proj-thumb{
+    aspect-ratio:16/10;
+    background:var(--paper-alt);
+    margin-bottom:20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .proj-thumb .tint{
+    position:absolute;inset:0;
+    mix-blend-mode:multiply;
+    opacity:0.85;
+    transition:transform 0.4s ease;
+  }
+  .proj-card:hover .tint{transform:scale(1.04);}
+  .proj-cat{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    color:var(--paper);
+    background:var(--ink);
+    display:inline-block;
+    padding:4px 10px;
+    position:absolute;
+    top:12px;left:12px;
+  }
+  .proj-card h3{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.3rem;
+    margin-bottom:8px;
+  }
+  .proj-card p{color:var(--ink-soft);font-size:0.92rem;}
+  .contact-wrap{
+    display:grid;
+    grid-template-columns:0.9fr 1.1fr;
+    gap:64px;
+  }
+  .contact-info h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(2rem,4vw,3rem);
+    text-transform:uppercase;
+    line-height:1.05;
+    margin-bottom:20px;
+  }
+  .contact-info p{color:var(--ink-soft);margin-bottom:28px;max-width:360px;}
+  .contact-info .info-row{
+    display:flex;
+    justify-content:space-between;
+    border-top:1px solid var(--grid-line);
+    padding:14px 0;
+    font-size:0.9rem;
+  }
+  .contact-info .info-row span:first-child{color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:0.78rem;}
+  form{display:flex;flex-direction:column;gap:22px;}
+  .field{display:flex;flex-direction:column;gap:8px;}
+  .field label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    color:var(--ink-soft);
+  }
+  .field input,.field textarea{
+    border:none;
+    border-bottom:1px solid var(--grid-line);
+    background:transparent;
+    padding:10px 2px;
+    font-family:'Inter',sans-serif;
+    font-size:1rem;
+    color:var(--ink);
+    resize:vertical;
+    transition:border-color 0.2s ease;
+  }
+  .field input:focus,.field textarea:focus{border-color:var(--ink);}
+  .field textarea{min-height:110px;}
+  .submit-row{display:flex;align-items:center;gap:18px;margin-top:8px;}
+  #formMsg{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.8rem;
+    color:var(--sage);
+    opacity:0;
+    transition:opacity 0.3s ease;
+  }
+  #formMsg.show{opacity:1;}
+  footer{
+    padding:32px 0;
+    display:flex;
+    justify-content:space-between;
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .reveal{
+    opacity:0;
+    transform:translateY(24px);
+    transition:opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.in{opacity:1;transform:translateY(0);}
+  @media (max-width:860px){
+    .profile-grid,.contact-wrap{grid-template-columns:1fr;}
+    .proj-grid{grid-template-columns:1fr;}
+    .navlinks{display:none;}
+    .skill-row{grid-template-columns:110px 1fr 44px;gap:10px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-guides" aria-hidden="true">
+  <span></span><span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<header>
+  <nav class="wrap">
+    <div class="logo">WIL<span>DAN</span></div>
+    <div class="navlinks">
+      <a href="#profile">Profile</a>
+      <a href="#skills">Skills</a>
+      <a href="#work">Work</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <div class="eyebrow"><span class="dot"></span> ROLE / GRAPHIC &amp; UI DESIGNER — OPEN FOR PROJECTS</div>
+    <h1>Design that <em>holds up</em><br>under scrutiny.</h1>
+    <div class="hero-sub">
+      <p>I build visual identities and interfaces with the same discipline as a print production sheet — every mark intentional, every grid line load-bearing. Based remote, working with startups and studios worldwide.</p>
+      <a href="#contact" class="btn crop"><span class="cm2"></span>START A PROJECT →</a>
+    </div>
+  </section>
+
+  <section id="profile">
+    <div class="sec-head">
+      <h2>Profile</h2>
+      <span class="tag mono">01 / ABOUT</span>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-photo reveal">
+        <div class="swatchbar">
+          <span style="background:var(--klein)"></span>
+          <span style="background:var(--coral)"></span>
+          <span style="background:var(--sage)"></span>
+          <span style="background:var(--ink)"></span>
+        </div>
+      </div>
+      <div class="profile-text reveal">
+        <p>I'm <strong>Wildan</strong>, a graphic and UI designer with eight years of practice spanning brand identity, editorial layout, and product interfaces. I trained in print production before moving into digital — that background shows up in how I treat grids, spacing, and hierarchy as structural, not decorative.</p>
+        <p>My process starts with constraints: the medium, the audience, the message. From there I build systems — type scales, color logic, component rules — that a brand or product can grow into, rather than one-off pages that don't scale.</p>
+        <p>Recent work includes identity systems for two Series-A startups, an editorial redesign for an independent publication, and ongoing UI work for a fintech dashboard.</p>
+        <div class="stats">
+          <div class="stat"><b>8</b><span>YEARS PRACTICE</span></div>
+          <div class="stat"><b>46</b><span>PROJECTS SHIPPED</span></div>
+          <div class="stat"><b>12</b><span>BRAND SYSTEMS BUILT</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="sec-head">
+      <h2>Skills</h2>
+      <span class="tag mono">02 / CAPABILITIES</span>
+    </div>
+    <div class="skills-list reveal">
+      <div class="skill-row">
+        <div class="skill-name">Brand Identity</div>
+        <div class="skill-track"><div class="skill-fill" data-pct="94"></div></div>
+        <div class="skill-pct">94%</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-name">UI / UX Design</div>
+        <div class="skill-track"><div class="skill-fill" data-pct="88"></div></div>
+        <div class="skill-pct">88%</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-name">Illustration</div>
+        <div class="skill-track"><div class="skill-fill" data-pct="80"></div></div>
+        <div class="skill-pct">80%</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-name">Typography</div>
+        <div class="skill-track"><div class="skill-fill" data-pct="91"></div></div>
+        <div class="skill-pct">91%</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-name">Print Production</div>
+        <div class="skill-track"><div class="skill-fill" data-pct="85"></div></div>
+        <div class="skill-pct">85%</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-name">Motion / Prototyping</div>
+        <div class="skill-track"><div class="skill-fill" data-pct="70"></div></div>
+        <div class="skill-pct">70%</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="work">
+    <div class="sec-head">
+      <h2>Selected Work</h2>
+      <span class="tag mono">03 / PROJECTS</span>
+    </div>
+    <div class="filters">
+      <button class="tab active" data-filter="all">ALL</button>
+      <button class="tab" data-filter="web">WEB</button>
+      <button class="tab" data-filter="branding">BRANDING</button>
+      <button class="tab" data-filter="illustration">ILLUSTRATION</button>
+    </div>
+    <div class="proj-grid" id="projGrid">
+
+      <div class="proj-card crop reveal" data-cat="branding">
+        <span class="cm2"></span>
+        <div class="proj-thumb"><div class="tint" style="background:linear-gradient(135deg,var(--klein),var(--sage))"></div><span class="proj-cat mono">BRANDING</span></div>
+        <h3>Halo Coffee — Identity System</h3>
+        <p>Full brand identity for a specialty roaster: mark, packaging, and a modular grid for seasonal releases.</p>
+      </div>
+
+      <div class="proj-card crop reveal" data-cat="web">
+        <span class="cm2"></span>
+        <div class="proj-thumb"><div class="tint" style="background:linear-gradient(135deg,var(--ink),var(--klein))"></div><span class="proj-cat mono">WEB</span></div>
+        <h3>Ledgerline — Fintech Dashboard</h3>
+        <p>UI system and component library for a financial reporting product used by 200+ small businesses.</p>
+      </div>
+
+      <div class="proj-card crop reveal" data-cat="illustration">
+        <span class="cm2"></span>
+        <div class="proj-thumb"><div class="tint" style="background:linear-gradient(135deg,var(--coral),var(--paper-alt))"></div><span class="proj-cat mono">ILLUSTRATION</span></div>
+        <h3>Field Notes — Editorial Illustration Series</h3>
+        <p>A twelve-piece illustration set accompanying a nature-writing column, built around a limited risograph palette.</p>
+      </div>
+
+      <div class="proj-card crop reveal" data-cat="web">
+        <span class="cm2"></span>
+        <div class="proj-thumb"><div class="tint" style="background:linear-gradient(135deg,var(--sage),var(--ink))"></div><span class="proj-cat mono">WEB</span></div>
+        <h3>Arcweld — Studio Portfolio</h3>
+        <p>A minimal, grid-driven site for an architecture studio, with a case-study template built for fast future edits.</p>
+      </div>
+
+      <div class="proj-card crop reveal" data-cat="branding">
+        <span class="cm2"></span>
+        <div class="proj-thumb"><div class="tint" style="background:linear-gradient(135deg,var(--coral),var(--klein))"></div><span class="proj-cat mono">BRANDING</span></div>
+        <h3>Northbound — Rebrand</h3>
+        <p>Repositioning and full visual overhaul for a logistics startup moving upmarket, including a new type system.</p>
+      </div>
+
+      <div class="proj-card crop reveal" data-cat="illustration">
+        <span class="cm2"></span>
+        <div class="proj-thumb"><div class="tint" style="background:linear-gradient(135deg,var(--paper-alt),var(--coral))"></div><span class="proj-cat mono">ILLUSTRATION</span></div>
+        <h3>Paper Weather — Poster Set</h3>
+        <p>A self-directed series of six screenprint-style posters exploring weather patterns as abstract pattern systems.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="contact-wrap">
+      <div class="contact-info reveal">
+        <span class="tag mono">04 / CONTACT</span>
+        <h2>Let's make<br>something.</h2>
+        <p>Have a project in mind? Send a few details below and I'll follow up within two working days.</p>
+        <div class="info-row"><span>EMAIL</span><span>cuibreakout@gmail.com</span></div>
+        <div class="info-row"><span>LOCATION</span><span>Jakarta Utara</span></div>
+        <div class="info-row"><span>STATUS</span><span>Open for Projects</span></div>
+      </div>
+      <form id="contactForm" class="reveal">
+        <div class="field">
+          <label for="cf-name">NAME</label>
+          <input id="cf-name" name="name" type="text" required autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="cf-email">EMAIL</label>
+          <input id="cf-email" name="email" type="email" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="cf-message">PROJECT DETAILS</label>
+          <textarea id="cf-message" name="message" required></textarea>
+        </div>
+        <div class="submit-row">
+          <button type="submit" class="btn">SEND MESSAGE</button>
+          <span id="formMsg" class="mono">Message received — thanks, Wildan will reply soon.</span>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 wildan. ALL RIGHTS RESERVED.</span>
+    <span>DESIGNED &amp; BUILT ON A VSCODE.</span>
+  </footer>
+
+</main>
+
+<script>
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold:0.15});
+  revealEls.forEach(el => io.observe(el));
+
+  const skillTrack = document.querySelector('.skills-list');
+  const skillIO = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        document.querySelectorAll('.skill-fill').forEach(fill => {
+          fill.style.width = fill.dataset.pct + '%';
+        });
+        skillIO.disconnect();
+      }
+    });
+  }, {threshold:0.3});
+  if(skillTrack) skillIO.observe(skillTrack);
+
+  const tabs = document.querySelectorAll('.tab');
+  const cards = document.querySelectorAll('.proj-card');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const filter = tab.dataset.filter;
+      cards.forEach(card => {
+        const match = filter === 'all' || card.dataset.cat === filter;
+        card.classList.toggle('hide', !match);
+      });
+    });
+  });
+
+  const form = document.getElementById('contactForm');
+  const formMsg = document.getElementById('formMsg');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const message = form.message.value.trim();
+    if(!name || !email || !message){
+      formMsg.textContent = 'Please fill in every field before sending.';
+      formMsg.style.color = 'var(--coral)';
+      formMsg.classList.add('show');
+      return;
+    }
+    formMsg.textContent = 'Message received — thanks, Wildan will reply soon.';
+    formMsg.style.color = 'var(--sage)';
+    formMsg.classList.add('show');
+    form.reset();
+  });
+</script>
+
+</body>
+</html>
