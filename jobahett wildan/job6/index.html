@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Berita Terkini</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header / Navigasi -->
+    <header>
+        <div class="container nav-container">
+            <h1 class="logo">Kabar<span>Nusantara</span></h1>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active" onclick="filterBerita('semua', event)">Semua</a></li>
+                    <li><a href="#" onclick="filterBerita('teknologi', event)">Teknologi</a></li>
+                    <li><a href="#" onclick="filterBerita('olahraga', event)">Olahraga</a></li>
+                    <li><a href="#" onclick="filterBerita('ekonomi', event)">Ekonomi</a></li>
+                </ul>
+            </nav>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Cari berita..." onkeyup="cariBerita()">
+            </div>
+        </div>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="container">
+        <!-- Berita Utama (Hero) -->
+        <section class="hero-news" id="heroSection">
+            <!-- Akan diisi oleh JavaScript -->
+        </section>
+
+        <!-- Daftar Berita Lainnya -->
+        <section class="news-section">
+            <h2>Berita Terbaru</h2>
+            <div class="news-grid" id="newsGrid">
+                <!-- Daftar kartu berita akan dirender otomatis di sini -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Detail Berita -->
+    <div id="newsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="tutupModal()">&times;</span>
+            <span id="modalKategori" class="modal-kategori"></span>
+            <h2 id="modalJudul"></h2>
+            <p class="modal-meta"><span id="modalPenulis"></span> | <span id="modalTanggal"></span></p>
+            <img id="modalGambar" src="" alt="Gambar Berita">
+            <p id="modalIsi" class="modal-isi"></p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Kabar Nusantara. Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
